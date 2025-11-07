@@ -56,7 +56,7 @@ public abstract class RequestParams
             }
             else
             {
-                (Meta ??= [])["progressToken"] = value.Value.Token switch
+                (Meta ??= new JsonObject())["progressToken"] = value.Value.Token switch
                 {
                     string s => JsonValue.Create(s),
                     long l => JsonValue.Create(l),

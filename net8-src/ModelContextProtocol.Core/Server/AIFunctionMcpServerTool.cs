@@ -369,7 +369,7 @@ internal sealed partial class AIFunctionMcpServerTool : McpServerTool
         {
             if (meta?.ContainsKey(attr.Name) is not true)
             {
-                (meta ??= [])[attr.Name] = JsonNode.Parse(attr.JsonValue);
+                (meta ??= new JsonObject())[attr.Name] = JsonNode.Parse(attr.JsonValue);
             }
         }
 

@@ -3,6 +3,7 @@ using ModelContextProtocol.Protocol;
 #if !NET
 using System.Runtime.InteropServices;
 #endif
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace ModelContextProtocol;
@@ -151,7 +152,7 @@ public static class AIContentExtensions
             _ => throw new NotSupportedException($"Resource type '{content.GetType().Name}' is not supported.")
         };
 
-        (ac.AdditionalProperties ??= [])["uri"] = content.Uri;
+        (ac.AdditionalProperties ??= new Dictionary<string, object?>())["uri"] = content.Uri;
         ac.RawRepresentation = content;
 
         return ac;
