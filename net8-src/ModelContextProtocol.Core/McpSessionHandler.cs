@@ -769,69 +769,69 @@ internal sealed partial class McpSessionHandler : IAsyncDisposable
         return null;
     }
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} message processing canceled.")]
-    private partial void LogEndpointMessageProcessingCanceled(string endpointName);
+    private void LogEndpointMessageProcessingCanceled(string endpointName) =>
+        _logger.LogInformation("{EndpointName} message processing canceled.", endpointName);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} method '{Method}' request handler called.")]
-    private partial void LogRequestHandlerCalled(string endpointName, string method);
+    private void LogRequestHandlerCalled(string endpointName, string method) =>
+        _logger.LogInformation("{EndpointName} method '{Method}' request handler called.", endpointName, method);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} method '{Method}' request handler completed.")]
-    private partial void LogRequestHandlerCompleted(string endpointName, string method);
+    private void LogRequestHandlerCompleted(string endpointName, string method) =>
+        _logger.LogInformation("{EndpointName} method '{Method}' request handler completed.", endpointName, method);
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "{EndpointName} method '{Method}' request handler failed.")]
-    private partial void LogRequestHandlerException(string endpointName, string method, Exception exception);
+    private void LogRequestHandlerException(string endpointName, string method, Exception exception) =>
+        _logger.LogWarning(exception, "{EndpointName} method '{Method}' request handler failed.", endpointName, method);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} received request for unknown request ID '{RequestId}'.")]
-    private partial void LogNoRequestFoundForMessageWithId(string endpointName, RequestId requestId);
+    private void LogNoRequestFoundForMessageWithId(string endpointName, RequestId requestId) =>
+        _logger.LogInformation("{EndpointName} received request for unknown request ID '{RequestId}'.", endpointName, requestId);
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "{EndpointName} request failed for method '{Method}': {ErrorMessage} ({ErrorCode}).")]
-    private partial void LogSendingRequestFailed(string endpointName, string method, string errorMessage, int errorCode);
+    private void LogSendingRequestFailed(string endpointName, string method, string errorMessage, int errorCode) =>
+        _logger.LogWarning("{EndpointName} request failed for method '{Method}': {ErrorMessage} ({ErrorCode}).", endpointName, method, errorMessage, errorCode);
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "{EndpointName} received invalid response for method '{Method}'.")]
-    private partial void LogSendingRequestInvalidResponseType(string endpointName, string method);
+    private void LogSendingRequestInvalidResponseType(string endpointName, string method) =>
+        _logger.LogWarning("{EndpointName} received invalid response for method '{Method}'.", endpointName, method);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "{EndpointName} sending method '{Method}' request.")]
-    private partial void LogSendingRequest(string endpointName, string method);
+    private void LogSendingRequest(string endpointName, string method) =>
+        _logger.LogDebug("{EndpointName} sending method '{Method}' request.", endpointName, method);
 
-    [LoggerMessage(Level = LogLevel.Trace, Message = "{EndpointName} sending method '{Method}' request. Request: '{Request}'.")]
-    private partial void LogSendingRequestSensitive(string endpointName, string method, string request);
+    private void LogSendingRequestSensitive(string endpointName, string method, string request) =>
+        _logger.LogTrace("{EndpointName} sending method '{Method}' request. Request: '{Request}'.", endpointName, method, request);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} canceled request '{RequestId}' per client notification. Reason: '{Reason}'.")]
-    private partial void LogRequestCanceled(string endpointName, RequestId requestId, string? reason);
+    private void LogRequestCanceled(string endpointName, RequestId requestId, string? reason) =>
+        _logger.LogInformation("{EndpointName} canceled request '{RequestId}' per client notification. Reason: '{Reason}'.", endpointName, requestId, reason);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "{EndpointName} Request response received for method {method}")]
-    private partial void LogRequestResponseReceived(string endpointName, string method);
+    private void LogRequestResponseReceived(string endpointName, string method) =>
+        _logger.LogDebug("{EndpointName} Request response received for method {method}", endpointName, method);
 
-    [LoggerMessage(Level = LogLevel.Trace, Message = "{EndpointName} Request response received for method {method}. Response: '{Response}'.")]
-    private partial void LogRequestResponseReceivedSensitive(string endpointName, string method, string response);
+    private void LogRequestResponseReceivedSensitive(string endpointName, string method, string response) =>
+        _logger.LogTrace("{EndpointName} Request response received for method {method}. Response: '{Response}'.", endpointName, method, response);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "{EndpointName} read {MessageType} message from channel.")]
-    private partial void LogMessageRead(string endpointName, string messageType);
+    private void LogMessageRead(string endpointName, string messageType) =>
+        _logger.LogDebug("{EndpointName} read {MessageType} message from channel.", endpointName, messageType);
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "{EndpointName} message handler {MessageType} failed.")]
-    private partial void LogMessageHandlerException(string endpointName, string messageType, Exception exception);
+    private void LogMessageHandlerException(string endpointName, string messageType, Exception exception) =>
+        _logger.LogWarning(exception, "{EndpointName} message handler {MessageType} failed.", endpointName, messageType);
 
-    [LoggerMessage(Level = LogLevel.Trace, Message = "{EndpointName} message handler {MessageType} failed. Message: '{Message}'.")]
-    private partial void LogMessageHandlerExceptionSensitive(string endpointName, string messageType, string message, Exception exception);
+    private void LogMessageHandlerExceptionSensitive(string endpointName, string messageType, string message, Exception exception) =>
+        _logger.LogTrace(exception, "{EndpointName} message handler {MessageType} failed. Message: '{Message}'.", endpointName, messageType, message);
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "{EndpointName} received unexpected {MessageType} message type.")]
-    private partial void LogEndpointHandlerUnexpectedMessageType(string endpointName, string messageType);
+    private void LogEndpointHandlerUnexpectedMessageType(string endpointName, string messageType) =>
+        _logger.LogWarning("{EndpointName} received unexpected {MessageType} message type.", endpointName, messageType);
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "{EndpointName} received request for method '{Method}', but no handler is available.")]
-    private partial void LogNoHandlerFoundForRequest(string endpointName, string method);
+    private void LogNoHandlerFoundForRequest(string endpointName, string method) =>
+        _logger.LogWarning("{EndpointName} received request for method '{Method}', but no handler is available.", endpointName, method);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "{EndpointName} waiting for response to request '{RequestId}' for method '{Method}'.")]
-    private partial void LogRequestSentAwaitingResponse(string endpointName, string method, RequestId requestId);
+    private void LogRequestSentAwaitingResponse(string endpointName, string method, RequestId requestId) =>
+        _logger.LogDebug("{EndpointName} waiting for response to request '{RequestId}' for method '{Method}'.", endpointName, requestId, method);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "{EndpointName} sending message.")]
-    private partial void LogSendingMessage(string endpointName);
+    private void LogSendingMessage(string endpointName) =>
+        _logger.LogDebug("{EndpointName} sending message.", endpointName);
 
-    [LoggerMessage(Level = LogLevel.Trace, Message = "{EndpointName} sending message. Message: '{Message}'.")]
-    private partial void LogSendingMessageSensitive(string endpointName, string message);
+    private void LogSendingMessageSensitive(string endpointName, string message) =>
+        _logger.LogTrace("{EndpointName} sending message. Message: '{Message}'.", endpointName, message);
 
-    [LoggerMessage(Level = LogLevel.Trace, Message = "{EndpointName} session {SessionId} created with transport {TransportKind}")]
-    private partial void LogSessionCreated(string endpointName, string sessionId, string transportKind);
+    private void LogSessionCreated(string endpointName, string sessionId, string transportKind) =>
+        _logger.LogTrace("{EndpointName} session {SessionId} created with transport {TransportKind}", endpointName, sessionId, transportKind);
 
-    [LoggerMessage(Level = LogLevel.Trace, Message = "{EndpointName} session {SessionId} disposed with transport {TransportKind}")]
-    private partial void LogSessionDisposed(string endpointName, string sessionId, string transportKind);
+    private void LogSessionDisposed(string endpointName, string sessionId, string transportKind) =>
+        _logger.LogTrace("{EndpointName} session {SessionId} disposed with transport {TransportKind}", endpointName, sessionId, transportKind);
 }

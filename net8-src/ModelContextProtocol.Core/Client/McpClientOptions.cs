@@ -1,3 +1,4 @@
+using System;
 using ModelContextProtocol.Protocol;
 
 namespace ModelContextProtocol.Client;
@@ -11,6 +12,8 @@ namespace ModelContextProtocol.Client;
 /// </remarks>
 public sealed class McpClientOptions
 {
+    private McpClientHandlers? _handlers;
+
     /// <summary>
     /// Gets or sets information about this client implementation, including its name and version.
     /// </summary>
@@ -67,13 +70,13 @@ public sealed class McpClientOptions
     /// <summary>
     /// Gets or sets the container of handlers used by the client for processing protocol messages.
     /// </summary>
-    public McpClientHandlers Handlers 
-    { 
-        get => field ??= new();
+    public McpClientHandlers Handlers
+    {
+        get => _handlers ??= new McpClientHandlers();
         set
         {
             Throw.IfNull(value);
-            field = value;
+            _handlers = value;
         }
     }
 }

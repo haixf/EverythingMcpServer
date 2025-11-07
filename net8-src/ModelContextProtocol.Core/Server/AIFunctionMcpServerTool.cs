@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
+using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -394,7 +395,8 @@ internal sealed partial class AIFunctionMcpServerTool : McpServerTool
             return null;
         }
 
-        if (function.ReturnJsonSchema is not JsonElement outputSchema)
+        if (function is not IReturnJsonSchemaProvider schemaProvider ||
+            schemaProvider.ReturnJsonSchema is not JsonElement outputSchema)
         {
             return null;
         }

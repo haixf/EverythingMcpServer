@@ -1,3 +1,4 @@
+using System;
 using ModelContextProtocol.Protocol;
 
 namespace ModelContextProtocol.Server;
@@ -7,6 +8,8 @@ namespace ModelContextProtocol.Server;
 /// </summary>
 public sealed class McpServerOptions
 {
+    private McpServerHandlers? _handlers;
+
     /// <summary>
     /// Gets or sets information about this server implementation, including its name and version.
     /// </summary>
@@ -93,13 +96,13 @@ public sealed class McpServerOptions
     /// <summary>
     /// Gets or sets the container of handlers used by the server for processing protocol messages.
     /// </summary>
-    public McpServerHandlers Handlers 
-    { 
-        get => field ??= new();
+    public McpServerHandlers Handlers
+    {
+        get => _handlers ??= new McpServerHandlers();
         set
-        { 
-            Throw.IfNull(value); 
-            field = value;
+        {
+            Throw.IfNull(value);
+            _handlers = value;
         }
     }
 

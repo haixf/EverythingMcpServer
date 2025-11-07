@@ -1,3 +1,5 @@
+using System;
+
 namespace ModelContextProtocol.Client;
 
 /// <summary>
@@ -5,12 +7,14 @@ namespace ModelContextProtocol.Client;
 /// </summary>
 public sealed class StdioClientTransportOptions
 {
+    private string? _command;
+
     /// <summary>
     /// Gets or sets the command to execute to start the server process.
     /// </summary>
     public required string Command
     {
-        get;
+        get => _command ?? throw new InvalidOperationException("Command has not been initialized.");
         set
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -18,7 +22,7 @@ public sealed class StdioClientTransportOptions
                 throw new ArgumentException("Command cannot be null or empty.", nameof(value));
             }
 
-            field = value;
+            _command = value;
         }
     }
 

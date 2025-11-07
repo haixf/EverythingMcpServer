@@ -1,6 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -11,6 +12,8 @@ namespace ModelContextProtocol.Protocol;
 /// </summary>
 public sealed class ElicitRequestParams
 {
+    private RequestSchema? _requestedSchema;
+
     /// <summary>
     /// Gets or sets the message to present to the user.
     /// </summary>
@@ -24,16 +27,17 @@ public sealed class ElicitRequestParams
     /// May be one of <see cref="StringSchema"/>, <see cref="NumberSchema"/>, <see cref="BooleanSchema"/>, or <see cref="EnumSchema"/>.
     /// </remarks>
     [JsonPropertyName("requestedSchema")]
-    [field: MaybeNull]
     public RequestSchema RequestedSchema
     {
-        get => field ??= new RequestSchema();
-        set => field = value;
+        get => _requestedSchema ??= new RequestSchema();
+        set => _requestedSchema = value;
     }
 
     /// <summary>Represents a request schema used in an elicitation request.</summary>
     public class RequestSchema
     {
+        private IDictionary<string, PrimitiveSchemaDefinition>? _properties;
+
         /// <summary>Gets the type of the schema.</summary>
         /// <remarks>This is always "object".</remarks>
         [JsonPropertyName("type")]
@@ -41,14 +45,13 @@ public sealed class ElicitRequestParams
 
         /// <summary>Gets or sets the properties of the schema.</summary>
         [JsonPropertyName("properties")]
-        [field: MaybeNull]
         public IDictionary<string, PrimitiveSchemaDefinition> Properties
         {
-            get => field ??= new Dictionary<string, PrimitiveSchemaDefinition>();
+            get => _properties ??= new Dictionary<string, PrimitiveSchemaDefinition>();
             set
             {
                 Throw.IfNull(value);
-                field = value;
+                _properties = value;
             }
         }
 
@@ -343,6 +346,10 @@ public sealed class ElicitRequestParams
     /// <summary>Represents a schema for a string type.</summary>
     public sealed class StringSchema : PrimitiveSchemaDefinition
     {
+        private int? _minLength;
+        private int? _maxLength;
+        private string? _format;
+
         /// <inheritdoc/>
         [JsonPropertyName("type")]
         public override string Type
@@ -361,7 +368,7 @@ public sealed class ElicitRequestParams
         [JsonPropertyName("minLength")]
         public int? MinLength
         {
-            get => field;
+            get => _minLength;
             set
             {
                 if (value < 0)
@@ -369,7 +376,7 @@ public sealed class ElicitRequestParams
                     throw new ArgumentOutOfRangeException(nameof(value), "Minimum length cannot be negative.");
                 }
 
-                field = value;
+                _minLength = value;
             }
         }
 
@@ -377,7 +384,7 @@ public sealed class ElicitRequestParams
         [JsonPropertyName("maxLength")]
         public int? MaxLength
         {
-            get => field;
+            get => _maxLength;
             set
             {
                 if (value < 0)
@@ -385,7 +392,7 @@ public sealed class ElicitRequestParams
                     throw new ArgumentOutOfRangeException(nameof(value), "Maximum length cannot be negative.");
                 }
 
-                field = value;
+                _maxLength = value;
             }
         }
 
@@ -393,7 +400,7 @@ public sealed class ElicitRequestParams
         [JsonPropertyName("format")]
         public string? Format
         {
-            get => field;
+            get => _format;
             set
             {
                 if (value is not (null or "email" or "uri" or "date" or "date-time"))
@@ -401,7 +408,7 @@ public sealed class ElicitRequestParams
                     throw new ArgumentException("Format must be 'email', 'uri', 'date', or 'date-time'.", nameof(value));
                 }
 
-                field = value;
+                _format = value;
             }
         }
 
@@ -413,11 +420,12 @@ public sealed class ElicitRequestParams
     /// <summary>Represents a schema for a number or integer type.</summary>
     public sealed class NumberSchema : PrimitiveSchemaDefinition
     {
+        private string? _type;
+
         /// <inheritdoc/>
-        [field: MaybeNull]
         public override string Type
         {
-            get => field ??= "number";
+            get => _type ??= "number";
             set
             {
                 if (value is not ("number" or "integer"))
@@ -425,7 +433,7 @@ public sealed class ElicitRequestParams
                     throw new ArgumentException("Type must be 'number' or 'integer'.", nameof(value));
                 }
 
-                field = value;
+                _type = value;
             }
         }
 
@@ -467,6 +475,8 @@ public sealed class ElicitRequestParams
     /// <summary>Represents a schema for an enum type.</summary>
     public sealed class EnumSchema : PrimitiveSchemaDefinition
     {
+        private IList<string>? _enumValues;
+
         /// <inheritdoc/>
         [JsonPropertyName("type")]
         public override string Type
@@ -483,14 +493,13 @@ public sealed class ElicitRequestParams
 
         /// <summary>Gets or sets the list of allowed string values for the enum.</summary>
         [JsonPropertyName("enum")]
-        [field: MaybeNull]
         public IList<string> Enum
         {
-            get => field ??= [];
+            get => _enumValues ??= new List<string>();
             set
             {
                 Throw.IfNull(value);
-                field = value;
+                _enumValues = value;
             }
         }
 

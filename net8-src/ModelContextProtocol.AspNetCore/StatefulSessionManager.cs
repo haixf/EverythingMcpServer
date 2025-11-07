@@ -229,15 +229,15 @@ internal sealed partial class StatefulSessionManager(
         }
     }
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "IdleTimeout of {IdleTimeout} exceeded. Closing idle session {SessionId}.")]
-    private partial void LogIdleSessionTimeout(string sessionId, TimeSpan idleTimeout);
+    private void LogIdleSessionTimeout(string sessionId, TimeSpan idleTimeout) =>
+        _logger.LogInformation("IdleTimeout of {IdleTimeout} exceeded. Closing idle session {SessionId}.", idleTimeout, sessionId);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "MaxIdleSessionCount of {MaxIdleSessionCount} exceeded. Closing idle session {SessionId} despite it being active more recently than the configured IdleTimeout to make room for new sessions.")]
-    private partial void LogIdleSessionLimit(string sessionId, int maxIdleSessionCount);
+    private void LogIdleSessionLimit(string sessionId, int maxIdleSessionCount) =>
+        _logger.LogInformation("MaxIdleSessionCount of {MaxIdleSessionCount} exceeded. Closing idle session {SessionId} despite it being active more recently than the configured IdleTimeout to make room for new sessions.", maxIdleSessionCount, sessionId);
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "Error disposing session {SessionId}.")]
-    private partial void LogSessionDisposeError(string sessionId, Exception ex);
+    private void LogSessionDisposeError(string sessionId, Exception ex) =>
+        _logger.LogError(ex, "Error disposing session {SessionId}.", sessionId);
 
-    [LoggerMessage(Level = LogLevel.Critical, Message = "MaxIdleSessionCount of {MaxIdleSessionCount} exceeded, and {CurrentIdleSessionCount} sessions are currently in the process of closing. Creating new session {SessionId} anyway.")]
-    private partial void LogTooManyIdleSessionsClosingConcurrently(string sessionId, int maxIdleSessionCount, long currentIdleSessionCount);
+    private void LogTooManyIdleSessionsClosingConcurrently(string sessionId, int maxIdleSessionCount, long currentIdleSessionCount) =>
+        _logger.LogCritical("MaxIdleSessionCount of {MaxIdleSessionCount} exceeded, and {CurrentIdleSessionCount} sessions are currently in the process of closing. Creating new session {SessionId} anyway.", maxIdleSessionCount, currentIdleSessionCount, sessionId);
 }

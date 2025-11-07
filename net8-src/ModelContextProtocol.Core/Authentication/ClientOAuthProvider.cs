@@ -694,21 +694,21 @@ internal sealed partial class ClientOAuthProvider
     private static void ThrowFailedToHandleUnauthorizedResponse(string message) =>
         throw new McpException($"Failed to handle unauthorized response with 'Bearer' scheme. {message}");
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Selected authorization server: {Server} from {Count} available servers")]
-    partial void LogSelectedAuthorizationServer(Uri server, int count);
+    private void LogSelectedAuthorizationServer(Uri server, int count) =>
+        _logger.LogInformation("Selected authorization server: {Server} from {Count} available servers", server, count);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "OAuth authorization completed successfully")]
-    partial void LogOAuthAuthorizationCompleted();
+    private void LogOAuthAuthorizationCompleted() =>
+        _logger.LogInformation("OAuth authorization completed successfully");
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "Error fetching auth server metadata from {Path}")]
-    partial void LogErrorFetchingAuthServerMetadata(Exception ex, string path);
+    private void LogErrorFetchingAuthServerMetadata(Exception ex, string path) =>
+        _logger.LogError(ex, "Error fetching auth server metadata from {Path}", path);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Performing dynamic client registration with {RegistrationEndpoint}")]
-    partial void LogPerformingDynamicClientRegistration(Uri registrationEndpoint);
+    private void LogPerformingDynamicClientRegistration(Uri registrationEndpoint) =>
+        _logger.LogInformation("Performing dynamic client registration with {RegistrationEndpoint}", registrationEndpoint);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Dynamic client registration successful. Client ID: {ClientId}")]
-    partial void LogDynamicClientRegistrationSuccessful(string clientId);
+    private void LogDynamicClientRegistrationSuccessful(string clientId) =>
+        _logger.LogInformation("Dynamic client registration successful. Client ID: {ClientId}", clientId);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "Validating resource metadata against original server URL: {ServerUrl}")]
-    partial void LogValidatingResourceMetadata(Uri serverUrl);
+    private void LogValidatingResourceMetadata(Uri serverUrl) =>
+        _logger.LogDebug("Validating resource metadata against original server URL: {ServerUrl}", serverUrl);
 }

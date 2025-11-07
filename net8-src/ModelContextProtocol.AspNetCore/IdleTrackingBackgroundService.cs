@@ -65,6 +65,6 @@ internal sealed partial class IdleTrackingBackgroundService : BackgroundService
         }
     }
 
-    [LoggerMessage(Level = LogLevel.Critical, Message = "The IdleTrackingBackgroundService has stopped unexpectedly.")]
-    private partial void IdleTrackingBackgroundServiceStoppedUnexpectedly();
+    private void IdleTrackingBackgroundServiceStoppedUnexpectedly() =>
+        _logger.LogCritical("The IdleTrackingBackgroundService has stopped unexpectedly.");
 }

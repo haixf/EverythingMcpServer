@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using ModelContextProtocol.Authentication;
 
 namespace ModelContextProtocol.Client;
@@ -7,12 +9,14 @@ namespace ModelContextProtocol.Client;
 /// </summary>
 public sealed class HttpClientTransportOptions
 {
+    private Uri? _endpoint;
+
     /// <summary>
     /// Gets or sets the base address of the server for SSE connections.
     /// </summary>
     public required Uri Endpoint
     {
-        get;
+        get => _endpoint ?? throw new InvalidOperationException("Endpoint has not been initialized.");
         set
         {
             if (value is null)
@@ -28,7 +32,7 @@ public sealed class HttpClientTransportOptions
                 throw new ArgumentException("Endpoint must use HTTP or HTTPS scheme.", nameof(value));
             }
 
-            field = value;
+            _endpoint = value;
         }
     }
 

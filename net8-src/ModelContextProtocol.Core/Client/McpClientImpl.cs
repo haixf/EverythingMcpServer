@@ -235,18 +235,18 @@ internal sealed partial class McpClientImpl : McpClient
         await _transport.DisposeAsync().ConfigureAwait(false);
     }
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} client received server '{ServerInfo}' capabilities: '{Capabilities}'.")]
-    private partial void LogServerCapabilitiesReceived(string endpointName, string capabilities, string serverInfo);
+    private void LogServerCapabilitiesReceived(string endpointName, string capabilities, string serverInfo) =>
+        _logger.LogInformation("{EndpointName} client received server '{ServerInfo}' capabilities: '{Capabilities}'.", endpointName, serverInfo, capabilities);
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "{EndpointName} client initialization error.")]
-    private partial void LogClientInitializationError(string endpointName, Exception exception);
+    private void LogClientInitializationError(string endpointName, Exception exception) =>
+        _logger.LogError(exception, "{EndpointName} client initialization error.", endpointName);
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "{EndpointName} client initialization timed out.")]
-    private partial void LogClientInitializationTimeout(string endpointName);
+    private void LogClientInitializationTimeout(string endpointName) =>
+        _logger.LogError("{EndpointName} client initialization timed out.", endpointName);
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "{EndpointName} client protocol version mismatch with server. Expected '{Expected}', received '{Received}'.")]
-    private partial void LogServerProtocolVersionMismatch(string endpointName, string expected, string received);
+    private void LogServerProtocolVersionMismatch(string endpointName, string expected, string received) =>
+        _logger.LogError("{EndpointName} client protocol version mismatch with server. Expected '{Expected}', received '{Received}'.", endpointName, expected, received);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} client created and connected.")]
-    private partial void LogClientConnected(string endpointName);
+    private void LogClientConnected(string endpointName) =>
+        _logger.LogInformation("{EndpointName} client created and connected.", endpointName);
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Security.Claims;
 using ModelContextProtocol.Protocol;
 
@@ -16,6 +17,7 @@ public sealed class RequestContext<TParams>
 {
     /// <summary>The server with which this instance is associated.</summary>
     private McpServer _server;
+    private IDictionary<string, object?>? _items;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RequestContext{TParams}"/> class with the specified server and JSON-RPC request.
@@ -49,8 +51,8 @@ public sealed class RequestContext<TParams>
     /// </summary>
     public IDictionary<string, object?> Items
     {
-        get => field ??= new Dictionary<string, object?>();
-        set => field = value;
+        get => _items ??= new Dictionary<string, object?>();
+        set => _items = value;
     }
 
     /// <summary>Gets or sets the services associated with this request.</summary>

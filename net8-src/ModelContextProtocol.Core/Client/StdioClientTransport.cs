@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using ModelContextProtocol.Protocol;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -256,29 +257,30 @@ public sealed partial class StdioClientTransport : IClientTransport
     private static Regex ContainsWhitespaceRegex { get; } = new(@"\s", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 #endif
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} connecting.")]
-    private static partial void LogTransportConnecting(ILogger logger, string endpointName);
+    private static void LogTransportConnecting(ILogger logger, string endpointName) =>
+        logger.LogInformation("{EndpointName} connecting.", endpointName);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} starting server process. Command: '{Command}'.")]
-    private static partial void LogCreateProcessForTransport(ILogger logger, string endpointName, string command);
+    private static void LogCreateProcessForTransport(ILogger logger, string endpointName, string command) =>
+        logger.LogInformation("{EndpointName} starting server process. Command: '{Command}'.", endpointName, command);
 
-    [LoggerMessage(Level = LogLevel.Trace, Message = "{EndpointName} starting server process. Command: '{Command}', Arguments: {Arguments}, Environment: {Environment}, Working directory: {WorkingDirectory}.")]
-    private static partial void LogCreateProcessForTransportSensitive(ILogger logger, string endpointName, string command, string? arguments, string environment, string workingDirectory);
+    private static void LogCreateProcessForTransportSensitive(ILogger logger, string endpointName, string command, string? arguments, string environment, string workingDirectory) =>
+        logger.LogTrace("{EndpointName} starting server process. Command: '{Command}', Arguments: {Arguments}, Environment: {Environment}, Working directory: {WorkingDirectory}.",
+            endpointName, command, arguments, environment, workingDirectory);
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "{EndpointName} failed to start server process.")]
-    private static partial void LogTransportProcessStartFailed(ILogger logger, string endpointName);
+    private static void LogTransportProcessStartFailed(ILogger logger, string endpointName) =>
+        logger.LogWarning("{EndpointName} failed to start server process.", endpointName);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} received stderr log: '{Data}'.")]
-    private static partial void LogReadStderr(ILogger logger, string endpointName, string data);
+    private static void LogReadStderr(ILogger logger, string endpointName, string data) =>
+        logger.LogInformation("{EndpointName} received stderr log: '{Data}'.", endpointName, data);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} started server process with PID {ProcessId}.")]
-    private static partial void LogTransportProcessStarted(ILogger logger, string endpointName, int processId);
+    private static void LogTransportProcessStarted(ILogger logger, string endpointName, int processId) =>
+        logger.LogInformation("{EndpointName} started server process with PID {ProcessId}.", endpointName, processId);
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "{EndpointName} connect failed.")]
-    private static partial void LogTransportConnectFailed(ILogger logger, string endpointName, Exception exception);
+    private static void LogTransportConnectFailed(ILogger logger, string endpointName, Exception exception) =>
+        logger.LogWarning(exception, "{EndpointName} connect failed.", endpointName);
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "{EndpointName} shutdown failed.")]
-    private static partial void LogTransportShutdownFailed(ILogger logger, string endpointName, Exception exception);
+    private static void LogTransportShutdownFailed(ILogger logger, string endpointName, Exception exception) =>
+        logger.LogWarning(exception, "{EndpointName} shutdown failed.", endpointName);
 
 #if NET
     [GeneratedRegex(@"[\s\.]+")]

@@ -750,6 +750,6 @@ internal sealed partial class McpServerImpl : McpServer
             _ => Protocol.LoggingLevel.Emergency,
         };
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "\"{ToolName}\" threw an unhandled exception.")]
-    private partial void ToolCallError(string toolName, Exception exception);
+    private void ToolCallError(string toolName, Exception exception) =>
+        _logger.LogError(exception, "\"{ToolName}\" threw an unhandled exception.", toolName);
 }

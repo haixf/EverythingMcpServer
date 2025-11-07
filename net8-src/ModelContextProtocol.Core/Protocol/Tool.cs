@@ -10,6 +10,9 @@ namespace ModelContextProtocol.Protocol;
 /// </summary>
 public sealed class Tool : IBaseMetadata
 {
+    private JsonElement _inputSchema = McpJsonUtilities.DefaultMcpToolSchema;
+    private JsonElement? _outputSchema;
+
     /// <inheritdoc />
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
@@ -55,7 +58,7 @@ public sealed class Tool : IBaseMetadata
     [JsonPropertyName("inputSchema")]
     public JsonElement InputSchema
     {
-        get => field;
+        get => _inputSchema;
         set
         {
             if (!McpJsonUtilities.IsValidMcpToolSchema(value))
@@ -63,10 +66,9 @@ public sealed class Tool : IBaseMetadata
                 throw new ArgumentException("The specified document is not a valid MCP tool input JSON schema.", nameof(InputSchema));
             }
 
-            field = value;
+            _inputSchema = value;
         }
-
-    } = McpJsonUtilities.DefaultMcpToolSchema;
+    }
 
     /// <summary>
     /// Gets or sets a JSON Schema object defining the expected structured outputs for the tool.
@@ -84,7 +86,7 @@ public sealed class Tool : IBaseMetadata
     [JsonPropertyName("outputSchema")]
     public JsonElement? OutputSchema
     {
-        get => field;
+        get => _outputSchema;
         set
         {
             if (value is not null && !McpJsonUtilities.IsValidMcpToolSchema(value.Value))
@@ -92,7 +94,7 @@ public sealed class Tool : IBaseMetadata
                 throw new ArgumentException("The specified document is not a valid MCP tool output JSON schema.", nameof(OutputSchema));
             }
 
-            field = value;
+            _outputSchema = value;
         }
     }
 

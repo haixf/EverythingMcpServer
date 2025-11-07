@@ -1,5 +1,6 @@
 using Microsoft.Extensions.AI;
 using ModelContextProtocol.Protocol;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json;
@@ -7,6 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace ModelContextProtocol.Client;
+
+internal interface IReturnJsonSchemaProvider
+{
+    JsonElement? ReturnJsonSchema { get; }
+}
 
 /// <summary>
 /// Provides an <see cref="AIFunction"/> that calls a tool via an <see cref="McpClient"/>.
@@ -26,7 +32,7 @@ namespace ModelContextProtocol.Client;
 /// or <see cref="McpClient.EnumerateToolsAsync"/> extension methods on an <see cref="McpClient"/> instance.
 /// </para>
 /// </remarks>
-public sealed class McpClientTool : AIFunction
+public sealed class McpClientTool : AIFunction, IReturnJsonSchemaProvider
 {
     /// <summary>Additional properties exposed from tools.</summary>
     private static readonly ReadOnlyDictionary<string, object?> s_additionalProperties =
@@ -81,7 +87,7 @@ public sealed class McpClientTool : AIFunction
     public override JsonElement JsonSchema => ProtocolTool.InputSchema;
 
     /// <inheritdoc/>
-    public override JsonElement? ReturnJsonSchema => ProtocolTool.OutputSchema;
+    public JsonElement? ReturnJsonSchema => ProtocolTool.OutputSchema;
 
     /// <inheritdoc/>
     public override JsonSerializerOptions JsonSerializerOptions { get; }

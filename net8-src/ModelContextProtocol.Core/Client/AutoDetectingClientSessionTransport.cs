@@ -128,18 +128,18 @@ internal sealed partial class AutoDetectingClientSessionTransport : ITransport
         }
     }
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "{EndpointName} attempting to connect using Streamable HTTP transport.")]
-    private partial void LogAttemptingStreamableHttp(string endpointName);
+    private void LogAttemptingStreamableHttp(string endpointName) =>
+        _logger.LogDebug("{EndpointName} attempting to connect using Streamable HTTP transport.", endpointName);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} streamable HTTP transport failed with status code {StatusCode}, falling back to SSE transport.")]
-    private partial void LogStreamableHttpFailed(string endpointName, HttpStatusCode statusCode);
+    private void LogStreamableHttpFailed(string endpointName, HttpStatusCode statusCode) =>
+        _logger.LogInformation("{EndpointName} streamable HTTP transport failed with status code {StatusCode}, falling back to SSE transport.", endpointName, statusCode);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} using Streamable HTTP transport.")]
-    private partial void LogUsingStreamableHttp(string endpointName);
+    private void LogUsingStreamableHttp(string endpointName) =>
+        _logger.LogInformation("{EndpointName} using Streamable HTTP transport.", endpointName);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "{EndpointName} attempting to connect using SSE transport.")]
-    private partial void LogAttemptingSSE(string endpointName);
+    private void LogAttemptingSSE(string endpointName) =>
+        _logger.LogDebug("{EndpointName} attempting to connect using SSE transport.", endpointName);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "{EndpointName} using SSE transport.")]
-    private partial void LogUsingSSE(string endpointName);
+    private void LogUsingSSE(string endpointName) =>
+        _logger.LogInformation("{EndpointName} using SSE transport.", endpointName);
 }
