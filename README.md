@@ -13,3 +13,47 @@ Everything MCP Server 是一個使用 .NET 建置的示範型 Model Context Prot
 ## 執行方式概述
 
 專案使用 `EverythingServer.csproj` 與 `EverythingServer.sln` 管理，透過 ASP.NET Core 建立 HTTP 傳輸層。啟動後，即可透過 MCP 相容的客戶端連線並測試上述工具、資源、提示詞與訂閱通知等功能。
+
+## 取得 Mcp-Session-Id
+
+1. 啟動 Everything MCP Server（預設監聽 `http://localhost:3001`）。
+2. 對根路徑送出一次 **POST** `initialize` 請求，並在標頭中同時宣告 `Accept: application/json, text/event-stream` 以及 `Content-Type: application/json`。請確認請求主體包含合法的 JSON-RPC `initialize` 內容，若以 POST 但未附帶 JSON 內文，伺服器會回傳 `Bad Request: Mcp-Session-Id header is required` 或 JSON 解析例外（`The input does not contain any JSON tokens`）。**首次請求請勿帶入 `Mcp-Session-Id` 標頭，否則會被視為查詢既有會話。**
+3. 伺服器會在回應標頭中加入 `Mcp-Session-Id`，將該值保存下來即可。
+
+以下示範使用 `curl` 取得 Session Id：
+
+```bash
+curl -i -X POST http://localhost:3001/ \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+          "clientInfo": { "name": "RestClient", "version": "0.1.0" },
+          "capabilities": {},
+          "protocolVersion": "2025-06-18"
+        }
+      }'
+```
+
+在命令輸出的回應標頭中，可找到類似以下內容：
+
+```
+Mcp-Session-Id: ZwwM0VFEtKNOMBsP8D2VzQ
+```
+
+後續的 MCP 呼叫需於 HTTP 標頭中帶入該 `Mcp-Session-Id` 才能維持相同的會話。
+
+### 常見錯誤排除
+
+#### `Bad Request: Mcp-Session-Id header is required`
+
+- 這個錯誤通常出現在以 `GET /` 開啟 SSE 連線時，卻沒有附上 `Mcp-Session-Id`。請先使用上方步驟發送 **POST** `initialize` 請求取得 Session Id，並在後續的 `GET /` 或其他 JSON-RPC 請求中一併帶入相同的 `Mcp-Session-Id` 標頭。
+- 如果是以 POST 送出 `initialize` 但仍看到此錯誤，通常代表請求主體為空（例如 Postman 未送出 JSON 內文）。請確認 `Body` 區段選擇 `raw` 並貼上範例 JSON。若伺服器收到空主體，也可能觸發 `System.Text.Json.JsonException: The input does not contain any JSON tokens.`，此時同樣是因為缺少請求內容所致。
+
+#### `Session not found`
+
+- 若伺服器回應 `404` 並帶有 `{"error":{"code":-32001,"message":"Session not found"}}`，代表請求中附帶的 `Mcp-Session-Id` 在伺服器端不存在（可能是伺服器重新啟動或 Session 已被清除）。
+- 請移除 `Mcp-Session-Id` 標頭並重新送出 `initialize` 請求，伺服器會回傳新的 Session Id；之後再把新值帶回後續請求即可。
