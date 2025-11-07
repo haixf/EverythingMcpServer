@@ -84,7 +84,8 @@ internal sealed class StreamableHttpHandler(
         }
 
         var sessionId = context.Request.Headers[McpSessionIdHeaderName].ToString();
-        var session = await GetSessionAsync(context, sessionId);
+        var sessionOne = new CiTTools.One<string>(sessionId);
+        var session = await GetSessionAsync(context, sessionOne);
         if (session is null)
         {
             return;
@@ -131,16 +132,22 @@ internal sealed class StreamableHttpHandler(
         }
     }
 
-    private async ValueTask<StreamableHttpSession?> GetSessionAsync(HttpContext context, string sessionId)
+    private async ValueTask<StreamableHttpSession?> GetSessionAsync(HttpContext context, CiTTools.One<string> sessionOne)
     {
         StreamableHttpSession? session;
 
-        if (string.IsNullOrEmpty(sessionId))
+        if (string.IsNullOrEmpty(sessionOne.Value))
+        {
+            if (string.IsNullOrWhiteSpace(sessionOne.Value))
+                sessionOne.Value = context.Request.Query["sid"].ToString();           
+        }
+
+        if (string.IsNullOrEmpty(sessionOne.Value))
         {
             await WriteJsonRpcErrorAsync(context, "Bad Request: Mcp-Session-Id header is required", StatusCodes.Status400BadRequest);
             return null;
         }
-        else if (!sessionManager.TryGetValue(sessionId, out session))
+        else if (!sessionManager.TryGetValue(sessionOne.Value, out session))
         {
             // -32001 isn't part of the MCP standard, but this is what the typescript-sdk currently does.
             // One of the few other usages I found was from some Ethereum JSON-RPC documentation and this
@@ -166,7 +173,6 @@ internal sealed class StreamableHttpHandler(
     private async ValueTask<StreamableHttpSession?> GetOrCreateSessionAsync(HttpContext context)
     {
         var sessionId = context.Request.Headers[McpSessionIdHeaderName].ToString();
-
         if (string.IsNullOrEmpty(sessionId))
         {
             return await StartNewSessionAsync(context);
@@ -180,7 +186,7 @@ internal sealed class StreamableHttpHandler(
         }
         else
         {
-            return await GetSessionAsync(context, sessionId);
+            return await GetSessionAsync(context, new CiTTools.One<string>(sessionId));
         }
     }
 

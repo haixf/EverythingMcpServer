@@ -2,6 +2,7 @@
 using EverythingServer.Prompts;
 using EverythingServer.Resources;
 using EverythingServer.Tools;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.AI;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
@@ -175,21 +176,54 @@ builder.Services.AddOpenTelemetry()
 
 var app = builder.Build();
 
-//app.Use(async (ctx, next) =>
-//{
-//    var hasBodyHeader = ctx.Request.Headers.ContainsKey("Content-Length") ||
-//                        ctx.Request.Headers.ContainsKey("Transfer-Encoding");
+// 健康檢查端點
+app.MapGet("/health", (HttpContext ctx) =>
+{
+    Console.WriteLine($"[IN] /health {DateTime.Now:HH:mm:ss} from {ctx.Connection.RemoteIpAddress}");
+    return Results.Text("OK");
+});
 
-//    if (!hasBodyHeader && string.Equals(ctx.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
-//    {
-//        ctx.Response.StatusCode = StatusCodes.Status411LengthRequired; // 或 400
-//        await ctx.Response.WriteAsync("Request body is required.");
-//        return;
-//    }
 
-//    await next();
-//});
+// 全域中介層：記錄所有 Request 和 Response
+app.Use(async (ctx, next) =>
+{
+    // ===== 1. 記錄 Request =====
+    var url = ctx.Request.GetDisplayUrl();
+    var hasBodyHeader = ctx.Request.Headers.ContainsKey("Content-Length")
+                        || ctx.Request.Headers.ContainsKey("Transfer-Encoding");
 
+    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {ctx.Request.Method} {url}");
+    Console.WriteLine($"  Accept: {ctx.Request.Headers["Accept"]}");
+    Console.WriteLine($"  Content-Length: {ctx.Request.ContentLength?.ToString() ?? "(null)"}  HasBodyHeader={hasBodyHeader}");
+    Console.WriteLine($"  MCP-Protocol-Version: {ctx.Request.Headers["MCP-Protocol-Version"]}");
+    Console.WriteLine($"  Mcp-Session-Id: {ctx.Request.Headers["Mcp-Session-Id"]}");
+
+    // ===== 2. 暫存原本 Response Body =====
+    var originalBodyStream = ctx.Response.Body;
+
+    await using var responseBody = new MemoryStream();
+    ctx.Response.Body = responseBody;
+
+    // ===== 3. 呼叫下一個中介層 =====
+    await next();
+
+    // ===== 4. 讀取 Response Body =====
+    ctx.Response.Body.Seek(0, SeekOrigin.Begin);
+    string responseText = await new StreamReader(ctx.Response.Body).ReadToEndAsync();
+    ctx.Response.Body.Seek(0, SeekOrigin.Begin);
+
+    // ===== 5. 記錄 Response =====
+    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] RESPONSE {ctx.Response.StatusCode}");
+    string mcpsid = ctx.Response.Headers["Mcp-Session-Id"].ToString();
+    if(!string.IsNullOrEmpty(mcpsid))
+    {
+        Console.WriteLine($"Mcp-Session-Id: {mcpsid}");
+    }
+    Console.WriteLine(responseText);
+
+    // ===== 6. 把 Response 寫回給客戶端 =====
+    await responseBody.CopyToAsync(originalBodyStream);
+});
 app.MapMcp();
 
 app.Run();
