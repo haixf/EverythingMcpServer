@@ -15,6 +15,22 @@ Everything MCP Server 是一個使用 .NET 建置的示範型 Model Context Prot
 專案使用 `EverythingServer.csproj` 與 `EverythingServer.sln` 管理，透過 ASP.NET Core 建立 HTTP 傳輸層。啟動後，即可透過 MCP 相容的客戶端連線並測試上述工具、資源、提示詞與訂閱通知等功能。
 
 
+## 切換為無 Session Id（Stateless）模式
+
+若需要在未提供 `Mcp-Session-Id` 標頭的情況下執行 MCP，可在 `appsettings.json` 或對應的環境組態中將 `Mcp.Stateless`
+設定為 `true`：
+
+```json
+{
+  "Mcp": {
+    "Stateless": true
+  }
+}
+```
+
+啟用後伺服器會以無狀態模式處理每個請求，並省略 `Mcp-Session-Id` 的回傳與驗證，方便在簡化流程或進行負載平衡時使用。
+需注意此模式下無法使用資源訂閱與伺服器主動通知等需要持久連線的功能。
+
 ## 使用 Cline 調試 Everything MCP Server
 
 以下示範如何透過 [Cline](https://github.com/cline/cline) MCP 用戶端與此伺服器建立連線並進行調試：
