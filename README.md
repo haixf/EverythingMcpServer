@@ -21,22 +21,26 @@ Everything MCP Server 是一個使用 .NET 建置的示範型 Model Context Prot
 
 1. **安裝並啟動伺服器**：先依照專案的開發流程啟動 Everything MCP Server（預設監聽 `http://localhost:3001`）。
 2. **安裝 Cline**：在 Visual Studio Code 安裝「Cline」擴充功能，或在支援 Cline 的環境依照官方文件完成安裝。
-3. **建立設定檔**：在工作目錄新增 `.cline/settings.json`（若已存在則更新），加入以下內容宣告自訂 MCP Server：
+3. **建立設定檔**：在工作目錄新增 `.cline/settings.json`（若已存在則更新），加入以下內容宣告自訂 MCP Server，並透過 `env` 與 `headers` 將 `Mcp-Session-Id` 套用到請求標頭：
 
    ```json
-   {
-     "mcpServers": {
-       "everything-mcp-server": {
-         "type": "http",
-         "url": "http://localhost:3001/"
-       }
-     }
-   }
+{
+  "mcpServers": {
+    "everything-mcp-server": {
+      "autoApprove": [],
+      "disabled": false,
+      "timeout": 60,
+      "type": "sse",
+      "url": "http://localhost:3001/?sid=<MCP_SESSION_ID>"      
+    }
+  }
+}
    ```
 
    - `everything-mcp-server` 可依需求改為其他識別名稱。
    - `url` 須對應實際執行中的伺服器位址與埠號。
-4. **啟動 Cline 並選擇伺服器**：在 Cline 面板中選擇剛新增的 `everything-mcp-server`，首次連線時 Cline 會自動送出 `initialize` 要求並在回應中取得 `Mcp-Session-Id`。
+   - `MCP_SESSION_ID` 必須先依照下方〈取得 Mcp-Session-Id〉流程取得後填入。
+4. **啟動 Cline 並選擇伺服器**：在 Cline 面板中選擇剛新增的 `everything-mcp-server`，Cline 會在連線時使用設定檔中的 `Mcp-Session-Id` 進行握手。
 5. **調試與測試**：
    - 透過 Cline 的工具列表可呼叫 `EverythingServer/Tools/` 中定義的工具。
    - 於資源頁籤可瀏覽 `EverythingServer/Resources/` 提供的內容。
