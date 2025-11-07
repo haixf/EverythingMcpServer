@@ -99,5 +99,8 @@ Mcp-Session-Id: ZwwM0VFEtKNOMBsP8D2VzQ
 
 ### 常見錯誤排除
 
+#### 為什麼 Network 面板一直顯示「尚未完成請求！」？
+當以瀏覽器或部分 HTTP 用戶端連線至 `http://localhost:3001/?sid=<MCP_SESSION_ID>` 時，伺服器會使用 **Server-Sent Events (SSE)** 傳輸協定維持一條長連線，以便在有通知或資源更新時即時推播。因此在 Chrome DevTools 等工具中，請求狀態會顯示為「尚未完成請求！」或 `pending`，並持續累積已連線時間。這是預期行為，代表 SSE 連線仍開啟並等待伺服器推送資料，無須額外處理；只要關閉或重新整理連線，該請求就會結束。
+
 #### 使用 Postman 時 Headers 設定一定要勾上 Content-Length
 如不勾上，Postman UI 看起來有 Body，但 Postman 其實沒有把 Body 送出去。
