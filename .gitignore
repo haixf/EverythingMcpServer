@@ -1,0 +1,13 @@
+*/obj
+*/.vs
+*/bin
+*.user
+.vs/*
+*/obj/*
+*/bin/*
+/net8-src/ModelContextProtocol.Core/obj
+/net8-src/ModelContextProtocol.Core/bin
+/net8-src/ModelContextProtocol.AspNetCore/obj
+/net8-src/ModelContextProtocol.AspNetCore/bin
+/net8-src/ModelContextProtocol/obj
+/net8-src/ModelContextProtocol/bin
