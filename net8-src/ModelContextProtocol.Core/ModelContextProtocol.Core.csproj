@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net8.0</TargetFrameworks>
-	  <ImplicitUsings>enable</ImplicitUsings>
+	<ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>true</IsPackable>
     <PackageId>ModelContextProtocol.Core</PackageId>

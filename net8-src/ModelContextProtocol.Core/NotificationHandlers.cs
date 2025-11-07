@@ -126,7 +126,7 @@ internal sealed class NotificationHandlers
             }
             catch (Exception e)
             {
-                (exceptions ??= []).Add(e);
+                (exceptions ??= new List<Exception>()).Add(e);
             }
 
             lock (SyncObj)
@@ -240,8 +240,8 @@ internal sealed class NotificationHandlers
                     // to point past this one. Importantly, we do not modify this node's Next or Prev.
                     // We want to ensure that an enumeration through all of the registrations can still
                     // progress through this one.
-                    Prev?.Next = Next;
-                    Next?.Prev = Prev;
+                    if (Prev != null) Prev.Next = Next;
+                    if (Next != null) Next.Prev = Prev;
 
                     // Decrement the ref count. In the common case, there's no in-flight invocation for
                     // this handler. However, in the uncommon case that there is, we need to wait for

@@ -67,13 +67,15 @@ public sealed class McpClientOptions
     /// <summary>
     /// Gets or sets the container of handlers used by the client for processing protocol messages.
     /// </summary>
-    public McpClientHandlers Handlers 
-    { 
-        get => field ??= new();
+    public McpClientHandlers Handlers
+    {
+        get => _handlers ??= new();
         set
         {
             Throw.IfNull(value);
-            field = value;
+            _handlers = value;
         }
     }
+
+    private McpClientHandlers? _handlers;
 }

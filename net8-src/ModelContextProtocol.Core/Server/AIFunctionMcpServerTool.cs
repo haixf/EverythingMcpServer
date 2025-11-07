@@ -64,7 +64,7 @@ internal sealed partial class AIFunctionMcpServerTool : McpServerTool
         return Create(
             AIFunctionFactory.Create(method, args =>
             {
-                Debug.Assert(args.Services is RequestServiceProvider<CallToolRequestParams>, $"The service provider should be a {nameof(RequestServiceProvider<>)} for this method to work correctly.");
+                Debug.Assert(args.Services is RequestServiceProvider<CallToolRequestParams>, $"The service provider should be a {nameof(RequestServiceProvider<CallToolRequestParams>)} for this method to work correctly.");
                 return createTargetFunc(((RequestServiceProvider<CallToolRequestParams>)args.Services!).Request);
             }, CreateAIFunctionFactoryOptions(method, options)),
             options);
@@ -369,7 +369,7 @@ internal sealed partial class AIFunctionMcpServerTool : McpServerTool
         {
             if (meta?.ContainsKey(attr.Name) is not true)
             {
-                (meta ??= [])[attr.Name] = JsonNode.Parse(attr.JsonValue);
+                (meta ??= new JsonObject())[attr.Name] = JsonNode.Parse(attr.JsonValue);
             }
         }
 
@@ -394,7 +394,7 @@ internal sealed partial class AIFunctionMcpServerTool : McpServerTool
             return null;
         }
 
-        if (function.ReturnJsonSchema is not JsonElement outputSchema)
+        if (!TryGetFunctionOutputSchema(function, out JsonElement outputSchema))
         {
             return null;
         }
@@ -434,6 +434,62 @@ internal sealed partial class AIFunctionMcpServerTool : McpServerTool
         }
 
         return outputSchema;
+    }
+
+    private static bool TryGetFunctionOutputSchema(AIFunction function, out JsonElement schema)
+    {
+        schema = default;
+
+        if (function is null)
+        {
+            return false;
+        }
+
+        static bool TryUnwrapJsonElement(object? candidate, out JsonElement value)
+        {
+            switch (candidate)
+            {
+                case JsonElement element:
+                    value = element;
+                    return true;
+
+                default:
+                    value = default;
+                    return false;
+            }
+        }
+
+        PropertyInfo? schemaProperty = function.GetType().GetProperty("ReturnJsonSchema", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (schemaProperty is null)
+        {
+            schemaProperty = function.GetType().GetProperty("ReturnSchema", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        }
+
+        if (schemaProperty is not null)
+        {
+            object? propertyValue = schemaProperty.GetValue(function);
+            if (TryUnwrapJsonElement(propertyValue, out schema))
+            {
+                return true;
+            }
+        }
+
+        MethodInfo? schemaMethod = function.GetType().GetMethod("GetReturnJsonSchema", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+        if (schemaMethod is null)
+        {
+            schemaMethod = function.GetType().GetMethod("GetReturnSchema", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+        }
+
+        if (schemaMethod is not null)
+        {
+            object? methodResult = schemaMethod.Invoke(function, null);
+            if (TryUnwrapJsonElement(methodResult, out schema))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private JsonNode? CreateStructuredResponse(object? aiFunctionResult)

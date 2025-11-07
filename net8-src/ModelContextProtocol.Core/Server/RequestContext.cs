@@ -49,9 +49,12 @@ public sealed class RequestContext<TParams>
     /// </summary>
     public IDictionary<string, object?> Items
     {
-        get => field ??= new Dictionary<string, object?>();
-        set => field = value;
+        get => _items ??= new Dictionary<string, object?>();
+        set => _items = value;
     }
+
+    /// <summary>Backing field for <see cref="Items"/>.</summary>
+    private IDictionary<string, object?>? _items;
 
     /// <summary>Gets or sets the services associated with this request.</summary>
     /// <remarks>

@@ -12,7 +12,7 @@ public sealed class HttpClientTransportOptions
     /// </summary>
     public required Uri Endpoint
     {
-        get;
+        get => _endpoint!;
         set
         {
             if (value is null)
@@ -28,7 +28,7 @@ public sealed class HttpClientTransportOptions
                 throw new ArgumentException("Endpoint must use HTTP or HTTPS scheme.", nameof(value));
             }
 
-            field = value;
+            _endpoint = value;
         }
     }
 
@@ -77,4 +77,6 @@ public sealed class HttpClientTransportOptions
     /// Gets sor sets the authorization provider to use for authentication.
     /// </summary>
     public ClientOAuthOptions? OAuth { get; set; }
+
+    private Uri? _endpoint;
 }
