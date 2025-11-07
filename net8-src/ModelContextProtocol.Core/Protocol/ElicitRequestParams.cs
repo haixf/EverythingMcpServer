@@ -24,12 +24,15 @@ public sealed class ElicitRequestParams
     /// May be one of <see cref="StringSchema"/>, <see cref="NumberSchema"/>, <see cref="BooleanSchema"/>, or <see cref="EnumSchema"/>.
     /// </remarks>
     [JsonPropertyName("requestedSchema")]
-    [field: MaybeNull]
+    [MaybeNull]
     public RequestSchema RequestedSchema
     {
-        get => field ??= new RequestSchema();
-        set => field = value;
+        get => _requestedSchema ??= new RequestSchema();
+        set => _requestedSchema = value;
     }
+
+    [MaybeNull]
+    private RequestSchema? _requestedSchema;
 
     /// <summary>Represents a request schema used in an elicitation request.</summary>
     public class RequestSchema
@@ -41,16 +44,19 @@ public sealed class ElicitRequestParams
 
         /// <summary>Gets or sets the properties of the schema.</summary>
         [JsonPropertyName("properties")]
-        [field: MaybeNull]
+        [MaybeNull]
         public IDictionary<string, PrimitiveSchemaDefinition> Properties
         {
-            get => field ??= new Dictionary<string, PrimitiveSchemaDefinition>();
+            get => _properties ??= new Dictionary<string, PrimitiveSchemaDefinition>();
             set
             {
                 Throw.IfNull(value);
-                field = value;
+                _properties = value;
             }
         }
+
+        [MaybeNull]
+        private IDictionary<string, PrimitiveSchemaDefinition>? _properties;
 
         /// <summary>Gets or sets the required properties of the schema.</summary>
         [JsonPropertyName("required")]
@@ -361,7 +367,7 @@ public sealed class ElicitRequestParams
         [JsonPropertyName("minLength")]
         public int? MinLength
         {
-            get => field;
+            get => _minLength;
             set
             {
                 if (value < 0)
@@ -369,7 +375,7 @@ public sealed class ElicitRequestParams
                     throw new ArgumentOutOfRangeException(nameof(value), "Minimum length cannot be negative.");
                 }
 
-                field = value;
+                _minLength = value;
             }
         }
 
@@ -377,7 +383,7 @@ public sealed class ElicitRequestParams
         [JsonPropertyName("maxLength")]
         public int? MaxLength
         {
-            get => field;
+            get => _maxLength;
             set
             {
                 if (value < 0)
@@ -385,7 +391,7 @@ public sealed class ElicitRequestParams
                     throw new ArgumentOutOfRangeException(nameof(value), "Maximum length cannot be negative.");
                 }
 
-                field = value;
+                _maxLength = value;
             }
         }
 
@@ -393,7 +399,7 @@ public sealed class ElicitRequestParams
         [JsonPropertyName("format")]
         public string? Format
         {
-            get => field;
+            get => _format;
             set
             {
                 if (value is not (null or "email" or "uri" or "date" or "date-time"))
@@ -401,9 +407,13 @@ public sealed class ElicitRequestParams
                     throw new ArgumentException("Format must be 'email', 'uri', 'date', or 'date-time'.", nameof(value));
                 }
 
-                field = value;
+                _format = value;
             }
         }
+
+        private int? _minLength;
+        private int? _maxLength;
+        private string? _format;
 
         /// <summary>Gets or sets the default value for the string.</summary>
         [JsonPropertyName("default")]
@@ -414,10 +424,9 @@ public sealed class ElicitRequestParams
     public sealed class NumberSchema : PrimitiveSchemaDefinition
     {
         /// <inheritdoc/>
-        [field: MaybeNull]
         public override string Type
         {
-            get => field ??= "number";
+            get => _type ??= "number";
             set
             {
                 if (value is not ("number" or "integer"))
@@ -425,9 +434,12 @@ public sealed class ElicitRequestParams
                     throw new ArgumentException("Type must be 'number' or 'integer'.", nameof(value));
                 }
 
-                field = value;
+                _type = value;
             }
         }
+
+        [MaybeNull]
+        private string? _type;
 
         /// <summary>Gets or sets the minimum allowed value.</summary>
         [JsonPropertyName("minimum")]
@@ -483,16 +495,18 @@ public sealed class ElicitRequestParams
 
         /// <summary>Gets or sets the list of allowed string values for the enum.</summary>
         [JsonPropertyName("enum")]
-        [field: MaybeNull]
         public IList<string> Enum
         {
-            get => field ??= [];
+            get => _enumValues ??= new List<string>();
             set
             {
                 Throw.IfNull(value);
-                field = value;
+                _enumValues = value;
             }
         }
+
+        [MaybeNull]
+        private IList<string>? _enumValues;
 
         /// <summary>Gets or sets optional display names corresponding to the enum values.</summary>
         [JsonPropertyName("enumNames")]

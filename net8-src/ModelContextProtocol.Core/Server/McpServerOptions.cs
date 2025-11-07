@@ -93,15 +93,17 @@ public sealed class McpServerOptions
     /// <summary>
     /// Gets or sets the container of handlers used by the server for processing protocol messages.
     /// </summary>
-    public McpServerHandlers Handlers 
-    { 
-        get => field ??= new();
+    public McpServerHandlers Handlers
+    {
+        get => _handlers ??= new();
         set
-        { 
-            Throw.IfNull(value); 
-            field = value;
+        {
+            Throw.IfNull(value);
+            _handlers = value;
         }
     }
+
+    private McpServerHandlers? _handlers;
 
     /// <summary>
     /// Gets or sets a collection of tools served by the server.

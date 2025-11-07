@@ -126,7 +126,7 @@ internal sealed class NotificationHandlers
             }
             catch (Exception e)
             {
-                (exceptions ??= []).Add(e);
+                (exceptions ??= new List<Exception>()).Add(e);
             }
 
             lock (SyncObj)

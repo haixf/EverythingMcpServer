@@ -10,7 +10,7 @@ public sealed class StdioClientTransportOptions
     /// </summary>
     public required string Command
     {
-        get;
+        get => _command!;
         set
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -18,7 +18,7 @@ public sealed class StdioClientTransportOptions
                 throw new ArgumentException("Command cannot be null or empty.", nameof(value));
             }
 
-            field = value;
+            _command = value;
         }
     }
 
@@ -74,4 +74,6 @@ public sealed class StdioClientTransportOptions
     /// Gets or sets a callback that is invoked for each line of stderr received from the server process.
     /// </summary>
     public Action<string>? StandardErrorLines { get; set; }
+
+    private string? _command;
 }
