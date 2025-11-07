@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -83,7 +84,8 @@ public abstract partial class McpServer : McpSession, IMcpServer
 
         StringBuilder? systemPrompt = null;
 
-        if (options?.Instructions is { } instructions)
+        string? instructions = options is null ? null : GetChatOptionsInstructions(options);
+        if (instructions is not null)
         {
             (systemPrompt ??= new()).Append(instructions);
         }
@@ -481,6 +483,38 @@ public abstract partial class McpServer : McpSession, IMcpServer
 
         /// <inheritdoc/>
         void IDisposable.Dispose() { } // nop
+    }
+
+    private static string? GetChatOptionsInstructions(ChatOptions chatOptions)
+    {
+        Throw.IfNull(chatOptions);
+
+        Type optionsType = chatOptions.GetType();
+
+        PropertyInfo? instructionsProperty = optionsType.GetProperty(
+            "Instructions",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        if (instructionsProperty is not null)
+        {
+            object? propertyValue = instructionsProperty.GetValue(chatOptions);
+            return propertyValue as string ?? propertyValue?.ToString();
+        }
+
+        MethodInfo? instructionsAccessor = optionsType.GetMethod(
+            "GetInstructions",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+            null,
+            Type.EmptyTypes,
+            null);
+
+        if (instructionsAccessor is null)
+        {
+            return null;
+        }
+
+        object? methodValue = instructionsAccessor.Invoke(chatOptions, null);
+        return methodValue as string ?? methodValue?.ToString();
     }
 
     /// <summary>

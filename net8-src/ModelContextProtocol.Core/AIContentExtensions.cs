@@ -152,7 +152,14 @@ public static class AIContentExtensions
             _ => throw new NotSupportedException($"Resource type '{content.GetType().Name}' is not supported.")
         };
 
-        (ac.AdditionalProperties ??= new Dictionary<string, object?>())["uri"] = content.Uri;
+        AdditionalPropertiesDictionary? additionalProperties = ac.AdditionalProperties;
+        if (additionalProperties is null)
+        {
+            additionalProperties = new AdditionalPropertiesDictionary();
+            ac.AdditionalProperties = additionalProperties;
+        }
+
+        additionalProperties["uri"] = content.Uri;
         ac.RawRepresentation = content;
 
         return ac;

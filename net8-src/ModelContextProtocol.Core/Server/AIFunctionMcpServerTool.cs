@@ -394,7 +394,7 @@ internal sealed partial class AIFunctionMcpServerTool : McpServerTool
             return null;
         }
 
-        if (function.ReturnJsonSchema is not JsonElement outputSchema)
+        if (!TryGetFunctionOutputSchema(function, out JsonElement outputSchema))
         {
             return null;
         }
@@ -434,6 +434,66 @@ internal sealed partial class AIFunctionMcpServerTool : McpServerTool
         }
 
         return outputSchema;
+    }
+
+    private static bool TryGetFunctionOutputSchema(AIFunction function, out JsonElement schema)
+    {
+        schema = default;
+
+        if (function is null)
+        {
+            return false;
+        }
+
+        static bool TryUnwrapJsonElement(object? candidate, out JsonElement value)
+        {
+            if (candidate is JsonElement element)
+            {
+                value = element;
+                return true;
+            }
+
+            if (candidate is JsonElement? nullable && nullable.HasValue)
+            {
+                value = nullable.Value;
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
+
+        PropertyInfo? schemaProperty = function.GetType().GetProperty("ReturnJsonSchema", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (schemaProperty is null)
+        {
+            schemaProperty = function.GetType().GetProperty("ReturnSchema", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        }
+
+        if (schemaProperty is not null)
+        {
+            object? propertyValue = schemaProperty.GetValue(function);
+            if (TryUnwrapJsonElement(propertyValue, out schema))
+            {
+                return true;
+            }
+        }
+
+        MethodInfo? schemaMethod = function.GetType().GetMethod("GetReturnJsonSchema", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+        if (schemaMethod is null)
+        {
+            schemaMethod = function.GetType().GetMethod("GetReturnSchema", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+        }
+
+        if (schemaMethod is not null)
+        {
+            object? methodResult = schemaMethod.Invoke(function, null);
+            if (TryUnwrapJsonElement(methodResult, out schema))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private JsonNode? CreateStructuredResponse(object? aiFunctionResult)

@@ -1,4 +1,5 @@
-﻿using ModelContextProtocol.Protocol;
+﻿using System;
+using ModelContextProtocol.Protocol;
 using System.Buffers;
 using System.Net.ServerSentEvents;
 using System.Text;
@@ -43,7 +44,7 @@ internal sealed class SseWriter(string? messageEndpoint = null, BoundedChannelOp
             messages = MessageFilter(messages, cancellationToken);
         }
 
-        _writeTask = SseFormatter.WriteAsync(messages, sseResponseStream, WriteJsonRpcMessageToBuffer, cancellationToken);
+        _writeTask = WriteMessagesAsync(messages, sseResponseStream, cancellationToken);
         return _writeTask;
     }
 
@@ -102,6 +103,61 @@ internal sealed class SseWriter(string? messageEndpoint = null, BoundedChannelOp
         }
 
         JsonSerializer.Serialize(GetUtf8JsonWriter(writer), item.Data, McpJsonUtilities.JsonContext.Default.JsonRpcMessage!);
+    }
+
+    private async Task WriteMessagesAsync(
+        IAsyncEnumerable<SseItem<JsonRpcMessage?>> messages,
+        Stream responseStream,
+        CancellationToken cancellationToken)
+    {
+        Throw.IfNull(responseStream);
+
+        await foreach (var item in messages.WithCancellation(cancellationToken))
+        {
+            await WriteItemAsync(item, responseStream, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task WriteItemAsync(
+        SseItem<JsonRpcMessage?> item,
+        Stream responseStream,
+        CancellationToken cancellationToken)
+    {
+        ArrayBufferWriter<byte> bufferWriter = new();
+        WriteJsonRpcMessageToBuffer(item, bufferWriter);
+
+        if (!string.IsNullOrEmpty(item.EventType))
+        {
+            await WriteUtf8Async(responseStream, "event: " + item.EventType + "\n", cancellationToken).ConfigureAwait(false);
+        }
+
+        ReadOnlySpan<byte> payload = bufferWriter.WrittenSpan;
+        if (!payload.IsEmpty)
+        {
+            string payloadText = Encoding.UTF8.GetString(payload);
+            string[] payloadLines = payloadText.Replace("\r", string.Empty, StringComparison.Ordinal).Split('\n');
+            foreach (string line in payloadLines)
+            {
+                await WriteUtf8Async(responseStream, "data: " + line + "\n", cancellationToken).ConfigureAwait(false);
+            }
+        }
+        else
+        {
+            await WriteUtf8Async(responseStream, "data:\n", cancellationToken).ConfigureAwait(false);
+        }
+
+        await WriteUtf8Async(responseStream, "\n", cancellationToken).ConfigureAwait(false);
+        await responseStream.FlushAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task WriteUtf8Async(Stream stream, string value, CancellationToken cancellationToken)
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes(value);
+#if NET
+        await stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
+#else
+        await stream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
+#endif
     }
 
     private Utf8JsonWriter GetUtf8JsonWriter(IBufferWriter<byte> writer)
