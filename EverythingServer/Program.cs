@@ -175,6 +175,21 @@ builder.Services.AddOpenTelemetry()
 
 var app = builder.Build();
 
+app.Use(async (ctx, next) =>
+{
+    var hasBodyHeader = ctx.Request.Headers.ContainsKey("Content-Length") ||
+                        ctx.Request.Headers.ContainsKey("Transfer-Encoding");
+
+    if (!hasBodyHeader && string.Equals(ctx.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+    {
+        ctx.Response.StatusCode = StatusCodes.Status411LengthRequired; // 或 400
+        await ctx.Response.WriteAsync("Request body is required.");
+        return;
+    }
+
+    await next();
+});
+
 app.MapMcp();
 
 app.Run();

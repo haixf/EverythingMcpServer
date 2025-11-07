@@ -9,6 +9,8 @@ using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 namespace ModelContextProtocol.AspNetCore;
@@ -280,6 +282,10 @@ internal sealed class StreamableHttpHandler(
     {
         // Implementation for reading a JSON-RPC message from the request body
         var message = await context.Request.ReadFromJsonAsync(s_messageTypeInfo, context.RequestAborted);
+
+        //using var reader = new StreamReader(context.Request.Body, Encoding.UTF8);
+        //string json = await reader.ReadToEndAsync();
+        //var message = JsonSerializer.Deserialize<JsonRpcMessage>(json);
 
         if (context.User?.Identity?.IsAuthenticated == true && message is not null)
         {
