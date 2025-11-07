@@ -1,5 +1,3 @@
-using System;
-
 namespace ModelContextProtocol.Server;
 
 /// <summary>

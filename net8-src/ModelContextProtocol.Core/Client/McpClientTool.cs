@@ -1,10 +1,7 @@
 using Microsoft.Extensions.AI;
 using ModelContextProtocol.Protocol;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ModelContextProtocol.Client;
 

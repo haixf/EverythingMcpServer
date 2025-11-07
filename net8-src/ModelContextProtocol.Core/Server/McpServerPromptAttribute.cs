@@ -1,7 +1,6 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using ModelContextProtocol.Protocol;
-using System;
 using System.Text.Json;
 
 namespace ModelContextProtocol.Server;
