@@ -59,6 +59,7 @@ builder.Services
     .WithTools<PrintEnvTool>()
     .WithTools<SampleLlmTool>()
     .WithTools<TinyImageTool>()
+    .WithTools<WeatherTool>()
     .WithPrompts<ComplexPromptType>()
     .WithPrompts<SimplePromptType>()
     .WithResources<SimpleResourceType>()
@@ -181,6 +182,30 @@ app.MapGet("/health", (HttpContext ctx) =>
 {
     Console.WriteLine($"[IN] /health {DateTime.Now:HH:mm:ss} from {ctx.Connection.RemoteIpAddress}");
     return Results.Text("OK");
+});
+
+// Bearer Token 驗證中介層
+app.Use(async (ctx, next) =>
+{
+    // 健康檢查端點不需要驗證
+    if (ctx.Request.Path.StartsWithSegments("/health"))
+    {
+        await next();
+        return;
+    }
+
+    if (!ctx.Request.Headers.TryGetValue("Authorization", out var authHeader) ||
+        !authHeader.ToString().Equals("Bearer usr_11100000000000000000"))
+    {
+        ctx.Response.StatusCode = 401; // Unauthorized
+        var url = ctx.Request.GetDisplayUrl();
+        var logMessage = $"[{DateTime.Now:HH:mm:ss}] Unauthorized request to {url}. Missing or invalid token.";
+        Console.WriteLine(logMessage);
+        await ctx.Response.WriteAsync("Unauthorized");
+        return;
+    }
+
+    await next();
 });
 
 
