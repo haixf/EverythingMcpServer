@@ -4,6 +4,7 @@ using EverythingServer.Resources;
 using EverythingServer.Tools;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
@@ -16,15 +17,19 @@ using System.Collections.Concurrent;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var mcpSettings = builder.Configuration.GetSection("Mcp").Get<McpServerSettings>() ?? new McpServerSettings();
+var isStateless = mcpSettings.Stateless;
+
 // Dictionary of session IDs to a set of resource URIs they are subscribed to
 // The value is a ConcurrentDictionary used as a thread-safe HashSet
 // because .NET does not have a built-in concurrent HashSet
 ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> subscriptions = new();
 
-builder.Services
+var mcpBuilder = builder.Services
     .AddMcpServer()
     .WithHttpTransport(options =>
     {
+        options.Stateless = isStateless;
         // Add a RunSessionHandler to remove all subscriptions for the session when it ends
         options.RunSessionHandler = async (httpContext, mcpServer, token) =>
         {
@@ -62,43 +67,50 @@ builder.Services
     .WithTools<WeatherTool>()
     .WithPrompts<ComplexPromptType>()
     .WithPrompts<SimplePromptType>()
-    .WithResources<SimpleResourceType>()
-    .WithSubscribeToResourcesHandler(async (ctx, ct) =>
-    {
-        if (ctx.Server.SessionId == null)
-        {
-            throw new McpException("Cannot add subscription for server with null SessionId");
-        }
-        if (ctx.Params?.Uri is { } uri)
-        {
-            subscriptions[ctx.Server.SessionId].TryAdd(uri, 0);
+    .WithResources<SimpleResourceType>();
 
-            await ctx.Server.SampleAsync([
-                new ChatMessage(ChatRole.System, "You are a helpful test server"),
-                new ChatMessage(ChatRole.User, $"Resource {uri}, context: A new subscription was started"),
-            ],
-            options: new ChatOptions
+if (!isStateless)
+{
+    mcpBuilder = mcpBuilder
+        .WithSubscribeToResourcesHandler(async (ctx, ct) =>
+        {
+            if (ctx.Server.SessionId == null)
             {
-                MaxOutputTokens = 100,
-                Temperature = 0.7f,
-            },
-            cancellationToken: ct);
-        }
+                throw new McpException("Cannot add subscription for server with null SessionId");
+            }
+            if (ctx.Params?.Uri is { } uri)
+            {
+                subscriptions[ctx.Server.SessionId].TryAdd(uri, 0);
 
-        return new EmptyResult();
-    })
-    .WithUnsubscribeFromResourcesHandler(async (ctx, ct) =>
-    {
-        if (ctx.Server.SessionId == null)
+                await ctx.Server.SampleAsync([
+                    new ChatMessage(ChatRole.System, "You are a helpful test server"),
+                    new ChatMessage(ChatRole.User, $"Resource {uri}, context: A new subscription was started"),
+                ],
+                options: new ChatOptions
+                {
+                    MaxOutputTokens = 100,
+                    Temperature = 0.7f,
+                },
+                cancellationToken: ct);
+            }
+
+            return new EmptyResult();
+        })
+        .WithUnsubscribeFromResourcesHandler(async (ctx, ct) =>
         {
-            throw new McpException("Cannot remove subscription for server with null SessionId");
-        }
-        if (ctx.Params?.Uri is { } uri)
-        {
-            subscriptions[ctx.Server.SessionId].TryRemove(uri, out _);
-        }
-        return new EmptyResult();
-    })
+            if (ctx.Server.SessionId == null)
+            {
+                throw new McpException("Cannot remove subscription for server with null SessionId");
+            }
+            if (ctx.Params?.Uri is { } uri)
+            {
+                subscriptions[ctx.Server.SessionId].TryRemove(uri, out _);
+            }
+            return new EmptyResult();
+        });
+}
+
+mcpBuilder = mcpBuilder
     .WithCompleteHandler(async (ctx, ct) =>
     {
         var exampleCompletions = new Dictionary<string, IEnumerable<string>>
